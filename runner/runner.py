@@ -135,6 +135,9 @@ def run_experiment(experiment, instance, solutions):
 		soft, hard = resource.getrlimit(resource.RLIMIT_AS)
 		resource.setrlimit(resource.RLIMIT_AS, (memlimit_gb*1024*1024*1024, hard))
 
+	# Measure time.
+	t_start = datetime.datetime.now()
+
 	# Open process execution for executable and send STDIN.
 	process = subprocess.Popen(executable, stderr=subprocess.PIPE, stdout=subprocess.PIPE, stdin=subprocess.PIPE, preexec_fn=set_memory_limit, universal_newlines = True)
 	process.stdin.write(json.dumps(experiment)) # First input: the experiment.
@@ -152,6 +155,8 @@ def run_experiment(experiment, instance, solutions):
 				stderr_string += str(line)
 				print(line, end='')
 	exit_code = process.wait()
+
+	t_end = datetime.datetime.now()
 
 	# Read STDOUT and STDERR if silent.
 	stdout_string = process.stdout.read()
@@ -173,7 +178,8 @@ def run_experiment(experiment, instance, solutions):
 		"experiment_name":experiment["name"], 
 		"stderr": stderr_string, 
 		"stdout": stdout_json, 
-		"exit_code": exit_code
+		"exit_code": exit_code,
+		"time": (t_end - t_start).total_seconds()
 	}
 
 def main():
@@ -198,9 +204,9 @@ def main():
 		for instance in instances_for_experiment_file(experiment_file_json):
 			# Get instance solutions from the dataset directory.
 			solutions = []
-			if os.path.isfile(F"{INSTANCES_DIR}/{instance['dataset_name']}/solutions.json"):
-				solutions = read_json_from_file(F"{INSTANCES_DIR}/{instance['dataset_name']}/solutions.json")
-				solutions = [s for s in solutions if s["instance_name"] == instance["instance_name"]]
+			if os.path.isfile(F"{instance['dataset_name']}/solutions.json"):
+				solutions = read_json_from_file(F"{dataset_dir}/solutions.json")
+				solutions = [s for s in solutions if s["instance_name"] == instance_name]
 
 			# For each experiment defined in the experiment file.
 			for experiment in experiment_file_json["experiments"]:
