@@ -1,0 +1,17 @@
+{
+  "datasets": [{"name": "euroalio2018"}],
+  "experiments": [
+    {
+      "name": "TTBF",
+      "executable": "euroalio2018",
+      "model_type": "ttbf",
+      "time_limit": 7200
+    },
+    {
+      "name": "CTTBF",
+      "executable": "euroalio2018",
+      "model_type": "cttbf",
+      "time_limit": 7200
+    }
+  ]
+}
