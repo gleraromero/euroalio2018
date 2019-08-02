@@ -45,6 +45,15 @@ The following instructions will guide you through the steps to execute the exper
 1. Click on Refresh.
 1. If more details on an experiment are desired click on the + icon in a specific row.
 
+### Checker
+We include a checker program to validate that algorithms produce **valid** routes. To run the checker execute:
+```python3 checker/checker.py output/<output_file.json>```
+
+The checker will go through each instance and validate:
+- That the exact solution route is feasible (with respect to all resources).
+- That the reported duration of the route is correct.
+- If Optimum status is reported, then it should be better or equal than any solution in the _solutions.json_ file of its dataset.
+
 ## Built With
 * [JSON for Modern C++](https://github.com/nlohmann/json)
 * [Boost Graph Library](https://www.boost.org/doc/libs/1_66_0/libs/graph/doc/index.html)
