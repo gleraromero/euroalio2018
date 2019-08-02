@@ -10,7 +10,6 @@
 
 #include "preprocess_travel_times.h"
 #include "vrp_instance.h"
-#include "goc/vrp/vrp_solution.h"
 #include "ttbf.h"
 #include "cttbf.h"
 #include "gcs.h"

@@ -52,13 +52,12 @@ void to_json(json& j, const VRPInstance& instance)
 void from_json(const json& j, VRPInstance& instance)
 {
 	int n = j["digraph"]["vertex_count"];
-	instance.n = n;
 	instance.D = j["digraph"];
 	instance.o = j["start_depot"];
 	instance.d = j["end_depot"];
 	instance.T = j["horizon"][1];
 	for (int i = 0; i < n; ++i) instance.s.push_back(j["service_times"][i]);
-	instance.Q = value_or_default(j, "capacity", 1.0);
+	instance.Q = j["capacity"];
 	for (int i = 0; i < n; ++i) instance.q.push_back(j["demands"][i]);
 	instance.tau = j["travel_times"];
 }

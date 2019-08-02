@@ -4,8 +4,8 @@
 // Departamento de Computacion - Universidad de Buenos Aires.
 //
 
-#ifndef EUROALIO2018_PREPROCESS_TAU_H
-#define EUROALIO2018_PREPROCESS_TAU_H
+#ifndef EUROALIO2018_PREPROCESS_TRAVEL_TIMES_H
+#define EUROALIO2018_PREPROCESS_TRAVEL_TIMES_H
 
 #include <goc/goc.h>
 
@@ -21,4 +21,4 @@ namespace euroalio2018
 void preprocess_travel_times(nlohmann::json& instance);
 } // namespace euroalio2018
 
-#endif //EUROALIO2018_PREPROCESS_TAU_H
+#endif //EUROALIO2018_PREPROCESS_TRAVEL_TIMES_H

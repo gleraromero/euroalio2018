@@ -19,11 +19,9 @@ typedef double ProfitUnit; // Represents the profit of vertices.
 // This class represents an instance of a vehicle routing problem.
 // Considerations:
 // 	- It considers two depots (origin and destination).
-//	- The number of vertices n includes both depots.
 class VRPInstance : public goc::Printable
 {
 public:
-	int n; // number of vertices.
 	goc::Digraph D; // digraph representing the network.
 	goc::Vertex o, d; // origin and destination depot.
 	TimeUnit T; // end of planning horizon ([0,T]).
