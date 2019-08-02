@@ -23,9 +23,9 @@ CTTBF::CTTBF(const VRPInstance& vrp, const std::vector<double>& p)
 	auto w = [&] (Vertex i, Vertex j, int m) { return m == 0 ? vrp.tau[i][j].Piece(0).domain.left : vrp.tau[i][j].Piece(m-1).domain.right; };
 	auto& s = vrp.s; auto& q = vrp.q; auto Q = vrp.Q;
 	Vertex o = vrp.o, d = vrp.d; // origin and destination.
-	vector<Vertex> Vo = exclude<vector<Vertex>, Vertex>(V, {o}); // Vo = V - {o}.
-	vector<Vertex> Vd = exclude<vector<Vertex>, Vertex>(V, {d}); // Vd = V - {d}.
-	vector<Vertex> Vod = exclude<vector<Vertex>, Vertex>(V, {o, d}); // Vod = V - {o, d}.
+	vector<Vertex> Vo = exclude(V, {o}); // Vo = V - {o}.
+	vector<Vertex> Vd = exclude(V, {d}); // Vd = V - {d}.
+	vector<Vertex> Vod = exclude(V, {o, d}); // Vod = V - {o, d}.
 	Matrix<vector<int>> M(n, n); // M[i][j] = { m \in 0...|T^ij_m|-1 }
 	for (Arc e: A) M[e.tail][e.head] = range(0, vrp.tau[e.tail][e.head].PieceCount());
 	Matrix<vector<int>> M_nz(n, n); // M_nz[i][j] = { m \in M : theta(ijm) != 0 }
