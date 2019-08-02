@@ -25,6 +25,12 @@ namespace goc
 class PWLFunction : public Printable
 {
 public:
+	// Returns: f(x)=a with the specific domain.
+	static PWLFunction ConstantFunction(double a, Interval domain);
+	
+	// Returns: f(x)=x with the specific domain.
+	static PWLFunction IdentityFunction(Interval domain);
+	
 	// Creates an empty piecewise linear function.
 	PWLFunction();
 	
@@ -91,7 +97,6 @@ public:
 	
 	// Returns: if any piece of both functions is different.
 	bool operator!=(const PWLFunction& f) const;
-	
 private:
 	// Updates the image_ attribute to keep it updated after a Pop() operation.
 	void UpdateImage();
@@ -104,6 +109,48 @@ private:
 void from_json(const nlohmann::json& j, PWLFunction& f);
 
 void to_json(nlohmann::json& j, const PWLFunction& f);
+
+// Returns: the function h(x) = f(x)+g(x).
+// Precondition: dom(f) = dom(g).
+PWLFunction operator+(const PWLFunction& f, const PWLFunction& g);
+
+// Returns: the function h(x) = f(x)-g(x).
+// Precondition: dom(f) = dom(g).
+PWLFunction operator-(const PWLFunction& f, const PWLFunction& g);
+
+// Returns: the function h(x) = f(x)*g(x).
+// Precondition: dom(f) = dom(g).
+PWLFunction operator*(const PWLFunction& f, const PWLFunction& g);
+
+// Returns: the function h(x) = f(x)+a.
+PWLFunction operator+(const PWLFunction& f, double a);
+PWLFunction operator+(double a, const PWLFunction& f);
+
+// Returns: the function h(x) = f(x)-a.
+PWLFunction operator-(const PWLFunction& f, double a);
+
+// Returns: the function h(x) = a-f(x).
+PWLFunction operator-(double a, const PWLFunction& f);
+
+// Returns: the function h(x) = f(x)*a.
+PWLFunction operator*(const PWLFunction& f, double a);
+PWLFunction operator*(double a, const PWLFunction& f);
+
+// Returns: h(x) = max(f(x), g(x)).
+// Obs: If x \in dom(f), but x \not\in dom(g), then h(x) = f(x). Analogously, for the opposite case.
+goc::PWLFunction Max(const goc::PWLFunction& f, const goc::PWLFunction& g);
+
+// Returns: h(x) = max(f(x), a).
+goc::PWLFunction Max(const goc::PWLFunction& f, double a);
+goc::PWLFunction Max(double a, const goc::PWLFunction& f);
+
+// Returns: h(x) = min(f(x), g(x)).
+// Obs: If x \in dom(f), but x \not\in dom(g), then h(x) = f(x). Analogously, for the opposite case.
+goc::PWLFunction Min(const goc::PWLFunction& f, const goc::PWLFunction& g);
+
+// Returns: h(x) = min(f(x), a).
+goc::PWLFunction Min(const goc::PWLFunction& f, double a);
+goc::PWLFunction Min(double a, const goc::PWLFunction& f);
 } // namespace goc
 
 #endif //GOC_MATH_PWL_FUNCTION_H

@@ -134,6 +134,12 @@ Expression operator+(const Variable& v1, const Variable& v2);
 
 // Returns: a new expression representing 1.0 * v1 - 1.0 * v2.
 Expression operator-(const Variable& v1, const Variable& v2);
+
+// Returns: a new expression scalar - v.
+Expression operator-(double scalar, const Variable& v);
+
+// Returns: a new expression representing scalar * e.
+Expression operator*(double scalar, const Expression& e);
 } // namespace goc
 
 #endif //GOC_LINEAR_PROGRAMMING_MODEL_EXPRESSION_H

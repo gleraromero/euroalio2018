@@ -15,6 +15,21 @@ using namespace nlohmann;
 
 namespace goc
 {
+
+PWLFunction PWLFunction::ConstantFunction(double a, Interval domain)
+{
+	PWLFunction f;
+	f.AddPiece(LinearFunction(Point2D(domain.left, a), Point2D(domain.right, a)));
+	return f;
+}
+
+PWLFunction PWLFunction::IdentityFunction(Interval domain)
+{
+	PWLFunction f;
+	f.AddPiece(LinearFunction(Point2D(domain.left, domain.left), Point2D(domain.right, domain.right)));
+	return f;
+}
+
 PWLFunction::PWLFunction()
 {
 	domain_ = image_ = {INFTY, -INFTY};
@@ -181,10 +196,10 @@ bool PWLFunction::operator!=(const PWLFunction& f) const
 void PWLFunction::UpdateImage()
 {
 	image_ = {INFTY, -INFTY};
-	for (int i = 0; i < pieces_.size(); ++i)
+	for (auto& p: pieces_)
 	{
-		image_.left = min(image_.left, pieces_[i].image.left);
-		image_.right = max(image_.right, pieces_[i].image.right);
+		image_.left = min(image_.left, p.image.left);
+		image_.right = max(image_.right, p.image.right);
 	}
 }
 
@@ -197,5 +212,139 @@ void to_json(json& j, const PWLFunction& f)
 {
 	j = vector<LinearFunction>();
 	for (auto& p: f.Pieces()) j.push_back(p);
+}
+
+PWLFunction operator+(const PWLFunction& f, const PWLFunction& g)
+{
+	PWLFunction h;
+	int i = 0, j = 0;
+	while (i < f.PieceCount() && j < g.PieceCount())
+	{
+		auto& pf = f.Piece(i), &pg = g.Piece(j);
+		h.AddPiece(pf + pg);
+		if (epsilon_equal(pf.domain.right, pg.domain.right)) { ++i; ++j; }
+		else if (epsilon_smaller(pf.domain.right, pg.domain.right)) { ++i; }
+		else { ++j; }
+	}
+	return h;
+}
+
+PWLFunction operator-(const PWLFunction& f, const PWLFunction& g)
+{
+	return f + g * -1.0;
+}
+
+PWLFunction operator*(const PWLFunction& f, const PWLFunction& g)
+{
+	PWLFunction h;
+	int i = 0, j = 0;
+	while (i < f.PieceCount() && j < g.PieceCount())
+	{
+		auto& pf = f.Piece(i), &pg = g.Piece(j);
+		h.AddPiece(pf * pg);
+		if (epsilon_equal(pf.domain.right, pg.domain.right)) { ++i; ++j; }
+		else if (epsilon_smaller(pf.domain.right, pg.domain.right)) { ++i; }
+		else { ++j; }
+	}
+	return h;
+}
+
+PWLFunction operator+(const PWLFunction& f, double a)
+{
+	return f + PWLFunction::ConstantFunction(a, f.Domain());
+}
+
+PWLFunction operator+(double a, const PWLFunction& f)
+{
+	return f + a;
+}
+
+PWLFunction operator-(const PWLFunction& f, double a)
+{
+	return f + (-1 * a);
+}
+
+PWLFunction operator-(double a, const PWLFunction& f)
+{
+	return f * -1.0 + a;
+}
+
+PWLFunction operator*(const PWLFunction& f, double a)
+{
+	return f * PWLFunction::ConstantFunction(a, f.Domain());
+}
+
+PWLFunction operator*(double a, const PWLFunction& f)
+{
+	return f * a;
+}
+
+PWLFunction Max(const PWLFunction& f_orig, const PWLFunction& g_orig)
+{
+	PWLFunction f = f_orig, g = g_orig;
+	PWLFunction h;
+	int i = 0, j = 0;
+	while (i < f.PieceCount() && j < g.PieceCount())
+	{
+		auto& pf = (LinearFunction&)f.Piece(i);
+		auto& pg = (LinearFunction&)g.Piece(j);
+		// If pf has a part before pg.
+		if (epsilon_smaller(pf.domain.left, pg.domain.left))
+		{
+			double l = pf.domain.left, r = min(pf.domain.right, pg.domain.left);
+			h.AddPiece(LinearFunction(Point2D(l, pf.Value(l)), Point2D(r, pf.Value(r))));
+			pf.domain.left = r;
+			pf.image.left = pf.Value(r);
+			if (epsilon_equal(r, pf.domain.right)) ++i;
+		}
+		else if (epsilon_smaller(pg.domain.left, pf.domain.left))
+		{
+			double l = pg.domain.left, r = min(pg.domain.right, pf.domain.left);
+			h.AddPiece(LinearFunction(Point2D(l, pg.Value(l)), Point2D(r, pg.Value(r))));
+			pg.domain.left = r;
+			pg.image.left = pg.Value(r);
+			if (epsilon_equal(r, pg.domain.right)) ++j;
+		}
+		else if (epsilon_equal(pf.domain.left, pg.domain.left))
+		{
+			double inter = pf.Intersection(pg);
+			double l = pf.domain.left;
+			double r = min(pf.domain.right, pg.domain.right);
+			if (epsilon_bigger(inter, l) && epsilon_smaller(inter, r)) r = inter;
+			h.AddPiece(LinearFunction(Point2D(l, max(pf.Value(l), pg.Value(l))), Point2D(r, max(pf.Value(r), pg.Value(r)))));
+			pf.domain.left = r;
+			pg.domain.left = r;
+			if (epsilon_equal(r, pf.domain.right)) ++i;
+			if (epsilon_equal(r, pg.domain.right)) ++j;
+		}
+	}
+	for (; i < f.PieceCount(); ++i) h.AddPiece(f.Piece(i));
+	for (; j < g.PieceCount(); ++j) h.AddPiece(g.Piece(j));
+	return h;
+}
+
+PWLFunction Max(const PWLFunction& f, double a)
+{
+	return Max(f, PWLFunction::ConstantFunction(a, f.Domain()));
+}
+
+PWLFunction Max(double a, const PWLFunction& f)
+{
+	return Max(f, a);
+}
+
+PWLFunction Min(const PWLFunction& f, const PWLFunction& g)
+{
+	return Max(f*-1.0, g*-1.0)*-1.0;
+}
+
+PWLFunction Min(const PWLFunction& f, double a)
+{
+	return Min(f, PWLFunction::ConstantFunction(a, f.Domain()));
+}
+
+PWLFunction Min(double a, const PWLFunction& f)
+{
+	return Min(f, a);
 }
 } // namespace goc

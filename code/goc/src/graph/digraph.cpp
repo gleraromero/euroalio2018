@@ -47,6 +47,7 @@ Digraph& Digraph::AddArc(Arc e)
 Digraph& Digraph::AddArcs(const std::vector<Arc>& arcs)
 {
 	for (Arc e: arcs) AddArc(e);
+	return *this;
 }
 
 Digraph& Digraph::RemoveArc(Arc e)

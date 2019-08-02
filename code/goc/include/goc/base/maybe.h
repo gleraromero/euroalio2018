@@ -46,7 +46,7 @@ public:
 	Maybe<T>& operator=(const Maybe<T>& maybe)
 	{
 		is_set_ = maybe.is_set_;
-		Set(maybe.Value());
+		if (IsSet()) Set(maybe.Value());
 		return *this;
 	}
 	

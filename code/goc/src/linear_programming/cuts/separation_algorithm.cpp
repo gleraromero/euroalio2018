@@ -11,6 +11,7 @@
 
 #include "goc/time/stopwatch.h"
 #include "goc/collection/collection_utils.h"
+#include "goc/math/number_utils.h"
 
 using namespace std;
 
@@ -30,6 +31,7 @@ SeparationAlgorithm::SeparationAlgorithm(const SeparationStrategy& separation_st
 		cuts_added_[family] = iteration_count_[family] = 0;
 		separation_time_[family] = 0.0_sec;
 	}
+	last_objective_ = INFTY;
 }
 
 vector<Constraint> SeparationAlgorithm::Separate(const Valuation& solution, int node_number, double node_bound) const
@@ -45,7 +47,7 @@ vector<Constraint> SeparationAlgorithm::Separate(const Valuation& solution, int 
 	unordered_set<string> families_with_cuts;
 	
 	// Try to find violated cuts for all families.
-	for (auto family: families_ordered_by_dependencies_)
+	for (auto& family: families_ordered_by_dependencies_)
 	{
 		if (includes(disabled_families_, family)) continue;
 		
@@ -70,7 +72,7 @@ vector<Constraint> SeparationAlgorithm::Separate(const Valuation& solution, int 
 		if (!all_dependencies_failed) continue;
 		
 		// Check what is the max amount of cuts that can be added in this iteration.
-		int cut_limit = CutLimitForThisIteration(family);
+		int cut_limit = CutLimitForThisIteration(family, node_bound);
 		if (cut_limit == 0) continue;
 		
 		// Execute the separation routine.
@@ -85,6 +87,7 @@ vector<Constraint> SeparationAlgorithm::Separate(const Valuation& solution, int 
 		iteration_count_[family]++;
 		separation_time_[family] += rolex.Peek();
 	}
+	last_objective_ = node_bound;
 	lock_.unlock();
 	return cuts;
 }
@@ -140,12 +143,13 @@ void SeparationAlgorithm::Disable() const
 	is_disabled_ = true;
 }
 
-int SeparationAlgorithm::CutLimitForThisIteration(const string& family) const
+int SeparationAlgorithm::CutLimitForThisIteration(const string& family, double node_bound) const
 {
 	int limit = INT_MAX;
 	limit = min(limit, strategy_.cut_limit.at(family) - cuts_added_.at(family));
 	limit = min(limit, strategy_.iteration_limit.at(family));
 	limit = min(limit, strategy_.cuts_per_iteration.at(family));
+	if (fabs(node_bound-last_objective_) < strategy_.improvement.at(family)) limit = 0;
 	return max(limit, 0);
 }
 } // namespace goc

@@ -19,12 +19,11 @@
 
 namespace goc
 {
-// Precondition: the collection must be iterable and must have a default constructor.
 // Returns: the collection without the elements in remove_set.
-template<typename Collection, typename T>
-Collection exclude(const Collection& collection, const std::set<T>& remove_set)
+template<typename T>
+std::vector<T> exclude(const std::vector<T>& collection, const std::set<T>& remove_set)
 {
-	Collection v;
+	std::vector<T> v;
 	for (auto e: collection)
 		if (remove_set.find(e) == remove_set.end())
 			v.push_back(e);

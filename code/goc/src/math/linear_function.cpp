@@ -63,7 +63,7 @@ double LinearFunction::Intersection(const LinearFunction& l) const
 
 void LinearFunction::Print(ostream& os) const
 {
-	os << "{" << Point2D(domain.left, Value(domain.left)) << "->" << Point2D(domain.right, Value(domain.right)) << "]";
+	os << "{" << Point2D(domain.left, Value(domain.left)) << "->" << Point2D(domain.right, Value(domain.right)) << "}";
 }
 
 bool LinearFunction::operator==(const LinearFunction& f) const
@@ -86,5 +86,35 @@ void to_json(json& j, const LinearFunction& f)
 	j = vector<Point2D>();
 	j.push_back(Point2D(f.domain.left, f.Value(f.domain.left)));
 	j.push_back(Point2D(f.domain.right, f.Value(f.domain.right)));
+}
+
+LinearFunction operator+(const LinearFunction& f, const LinearFunction& g)
+{
+	if (!f.domain.Intersects(g.domain)) return LinearFunction(Point2D(0.0, 0.0), Point2D(-1.0, 0.0));
+	double l = max(f.domain.left, g.domain.left);
+	double r = min(f.domain.right, g.domain.right);
+	return LinearFunction(Point2D(l, f.Value(l)+g.Value(l)), Point2D(r, f.Value(r)+g.Value(r)));
+}
+
+// Returns: h(x) = f(x)*g(x).
+// Precondition: dom(f) == dom(g).
+LinearFunction operator*(const LinearFunction& f, const LinearFunction& g)
+{
+	if (!f.domain.Intersects(g.domain)) return LinearFunction(Point2D(0.0, 0.0), Point2D(-1.0, 0.0));
+	double l = max(f.domain.left, g.domain.left);
+	double r = min(f.domain.right, g.domain.right);
+	return LinearFunction(Point2D(l, f.Value(l)*g.Value(l)), Point2D(r, f.Value(r)*g.Value(r)));
+}
+
+// Returns: h(x) = f(x)+a.
+LinearFunction operator+(const LinearFunction& f, double a)
+{
+	return LinearFunction(Point2D(f.domain.left, f.Value(f.domain.left)+a), Point2D(f.domain.right, f.Value(f.domain.right)+a));
+}
+
+// Returns: h(x) = f(x)*a.
+LinearFunction operator*(const LinearFunction& f, double a)
+{
+	return LinearFunction(Point2D(f.domain.left, f.Value(f.domain.left)*a), Point2D(f.domain.right, f.Value(f.domain.right)*a));
 }
 } // namespace goc

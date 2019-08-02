@@ -338,11 +338,18 @@ double CplexFormulation::EvaluateValuation(const Valuation& valuation) const
 	return ObjectiveFunction().Value(valuation);
 }
 
-bool CplexFormulation::IsFeasibleValuation(const Valuation& v) const
+bool CplexFormulation::IsFeasibleValuation(const Valuation& v, bool verbose) const
 {
 	// Check if all constraints hold for valuation v.
 	auto constraints = Constraints();
-	for (auto& c: constraints) if (!c.Holds(v)) return false;
+	for (auto& c: constraints)
+	{
+		if (!c.Holds(v))
+		{
+			if (verbose) clog << c << endl;
+			return false;
+		}
+	}
 	return true;
 }
 

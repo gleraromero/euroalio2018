@@ -75,6 +75,7 @@ public:
 	std::unordered_map<std::string, int> iteration_limit; // maximum number of iterations to run for a family.
 	std::unordered_map<std::string, int> cuts_per_iteration; // maximum number of cuts to add per iteration for a family.
 	std::unordered_map<std::string, int> node_limit; // maximum number of nodes where cuts will be searched for a family.
+	std::unordered_map<std::string, double> improvement; // cuts will be searched if the objective value improved at least this value in the last iteration.
 	
 private:
 	std::unordered_map<std::string, const SeparationRoutine*> routines_; // one separation routine associated to each cut family.

@@ -191,11 +191,7 @@ void chgobj(CPXENVptr env, CPXLPptr lp, int cnt, int const* indices, double cons
 
 int getobjsen(CPXCENVptr env, CPXCLPptr lp)
 {
-	int status = CPXgetobjsen(env, lp);
-	if (status == 0)
-	{
-		fail_with_error_message(env, status, "CPXgetobjsen");
-	}
+	return CPXgetobjsen(env, lp);
 }
 
 void getobj(CPXENVptr env, CPXLPptr lp, double* obj, int begin, int end)

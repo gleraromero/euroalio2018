@@ -35,4 +35,4 @@ void from_json(const json& j, VRPSolution& solution)
 	for (Route r: j["routes"]) solution.routes.push_back(r);
 }
 
-} // namespace euroalio2018
+} // namespace goc

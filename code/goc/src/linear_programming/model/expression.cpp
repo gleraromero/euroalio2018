@@ -227,4 +227,14 @@ Expression operator-(const Variable& v1, const Variable& v2)
 {
 	return 1.0*v1-1.0*v2;
 }
+
+Expression operator-(double scalar, const Variable& v)
+{
+	return -1 * v + scalar;
+}
+
+Expression operator*(double scalar, const Expression& e)
+{
+	return e * scalar;
+}
 } // namespace goc

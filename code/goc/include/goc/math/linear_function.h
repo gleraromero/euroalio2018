@@ -67,6 +67,19 @@ public:
 void from_json(const nlohmann::json& j, LinearFunction& f);
 
 void to_json(nlohmann::json& j, const LinearFunction& f);
-} // namespace goc
 
+// Returns: h(x) = f(x)+g(x).
+// Obs: dom(h) = dom(f) \cap dom(g).
+LinearFunction operator+(const LinearFunction& f, const LinearFunction& g);
+
+// Returns: h(x) = f(x)*g(x).
+// Obs: dom(h) = dom(f) \cap dom(g).
+LinearFunction operator*(const LinearFunction& f, const LinearFunction& g);
+
+// Returns: h(x) = f(x)+a.
+LinearFunction operator+(const LinearFunction& f, double a);
+
+// Returns: h(x) = f(x)*a.
+LinearFunction operator*(const LinearFunction& f, double a);
+} // namespace goc
 #endif //GOC_MATH_LINEAR_FUNCTION_H

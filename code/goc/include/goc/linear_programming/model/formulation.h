@@ -134,7 +134,8 @@ public:
 	virtual double EvaluateValuation(const Valuation& v) const = 0;
 	
 	// Returns: if the constraints of the model are satisfied by 'v'.
-	virtual bool IsFeasibleValuation(const Valuation& v) const = 0;
+	// 	- verbose: indicates if a contraint violated should be showed.
+	virtual bool IsFeasibleValuation(const Valuation& v, bool verbose=false) const = 0;
 	
 	// Returns: a copy in the heap of the current formulation.
 	// Observation: memory should be managed by the receiver and the pointer should be freed.

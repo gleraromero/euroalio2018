@@ -64,7 +64,7 @@ public:
 	
 private:
 	// Limit of cuts for a given family in the current iteration.
-	int CutLimitForThisIteration(const std::string& family) const;
+	int CutLimitForThisIteration(const std::string& family, double node_bound) const;
 	
 	mutable std::mutex lock_; 	// This lock is important for parallel branch and bound execution.
 							 	// It makes sure only one separation routine is called at each time.
@@ -73,6 +73,7 @@ private:
 	std::vector<std::string> families_ordered_by_dependencies_; // Families in topological order by '<': "depends on".
 	
 	// Keep track of what happened so far.
+	mutable double last_objective_; // last objective value recorded.
 	mutable std::unordered_map<std::string, int> cuts_added_, iteration_count_; // cuts added and number of iterations run.
 	mutable std::unordered_map<std::string, Duration> separation_time_; // Time spent on separation of each family.
 	mutable std::unordered_set<std::string> disabled_families_; // families that reached some of the limits and will never separate a cut in the future.

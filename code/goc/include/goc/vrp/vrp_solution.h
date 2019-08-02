@@ -38,6 +38,6 @@ void to_json(nlohmann::json& j, const VRPSolution& solution);
 // Parses an solution.
 void from_json(const nlohmann::json& j, VRPSolution& solution);
 
-} // namespace euroalio2018
+} // namespace goc
 
 #endif //GOC_VRP_VRP_SOLUTION_H
