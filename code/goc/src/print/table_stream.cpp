@@ -33,8 +33,9 @@ bool TableStream::RegisterAttempt()
 
 void TableStream::WriteHeader()
 {
+	if (!output_stream_) return;
 	for (int i = 0; i < col_names_.size(); ++i) *output_stream_ << setw(col_sizes_[i]) << col_names_[i];
-	if (output_stream_) *output_stream_ << endl;
+	*output_stream_ << endl;
 }
 
 void TableStream::WriteRow(const vector<string>& row)

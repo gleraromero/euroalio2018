@@ -15,6 +15,17 @@ using namespace nlohmann;
 
 namespace goc
 {
+BLBExecutionLog::BLBExecutionLog(bool init_defaults)
+{
+	if (init_defaults)
+	{
+		status = BLBStatus::DidNotStart;
+		time = merge_time = Duration();
+		screen_output = "";
+		forward_log = backward_log = MLBExecutionLog(true);
+	}
+}
+
 json BLBExecutionLog::ToJSON() const
 {
 	json j;

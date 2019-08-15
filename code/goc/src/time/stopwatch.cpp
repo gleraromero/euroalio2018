@@ -45,10 +45,11 @@ Duration Stopwatch::Resume()
 	return peek;
 }
 
-void Stopwatch::Reset()
+Stopwatch& Stopwatch::Reset()
 {
 	is_paused_ = true;
 	partial_ = 0.0_ms;
+	return *this;
 }
 
 Duration Stopwatch::Peek() const

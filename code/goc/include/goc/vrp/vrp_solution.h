@@ -25,6 +25,8 @@ public:
 	double value; // Value associated with the solution.
 	std::vector<Route> routes; // Solution routes.
 	
+	VRPSolution() = default;
+	
 	// Creates the solution with the specified parameters.
 	VRPSolution(double value, const std::vector<Route>& routes);
 	

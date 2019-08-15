@@ -62,6 +62,12 @@ Digraph& Digraph::RemoveArc(Arc e)
 	return *this;
 }
 
+Digraph& Digraph::RemoveArcs(const vector<Arc>& arcs)
+{
+	for (Arc e: arcs) RemoveArc(e);
+	return *this;
+}
+
 const vector<Vertex>& Digraph::Vertices() const
 {
 	return vertices_;

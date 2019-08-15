@@ -9,6 +9,7 @@
 #include <limits.h>
 
 #include "goc/collection/collection_utils.h"
+#include "goc/math/number_utils.h"
 
 using namespace std;
 
@@ -43,5 +44,59 @@ GraphPath longest_path(const Digraph& D, Vertex s, Vertex t)
 		L.push_back(v);
 	
 	return L;
+}
+
+vector<double> compute_earliest_arrival_time(const Digraph& D, Vertex s, double t0, const function<double(Vertex, Vertex, double)>& tt)
+{
+	priority_queue<pair<double, Vertex>, vector<pair<double, Vertex>>, greater<>> q;
+	vector<bool> visited(D.VertexCount(), false);
+	vector<double> EAT(D.VertexCount(), INFTY); // EAT[j] = Earliest arrival time to vertex j
+	q.push({t0, s});
+	while (!q.empty())
+	{
+		double t; Vertex v;
+		tie(t, v) = q.top();
+		q.pop();
+		if (visited[v]) continue;
+		visited[v] = true;
+		EAT[v] = t;
+		for (auto& w: D.Successors(v))
+		{
+			if (!visited[w])
+			{
+				double travel_time = tt(v, w, t);
+				if (travel_time == INFTY) continue;
+				q.push({t + travel_time, w});
+			}
+		}
+	}
+	return EAT;
+}
+
+vector<double> compute_latest_departure_time(const Digraph& D, Vertex s, double t0, const function<double(Vertex, Vertex, double)>& dep)
+{
+	priority_queue<pair<double, Vertex>> q;
+	vector<bool> visited(D.VertexCount(), false);
+	vector<double> LDT(D.VertexCount(), -INFTY);
+	q.push({t0, s});
+	while (!q.empty())
+	{
+		double t; Vertex v;
+		tie(t, v) = q.top();
+		q.pop();
+		if (visited[v]) continue;
+		visited[v] = true;
+		if (t == INFTY) continue;
+		LDT[v] = t;
+		for (auto& w: D.Predecessors(v))
+		{
+			if (!visited[w])
+			{
+				double d = dep(w, v, t);
+				if (d != INFTY) q.push({d, w});
+			}
+		}
+	}
+	return LDT;
 }
 } // namespace goc

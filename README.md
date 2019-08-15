@@ -38,7 +38,7 @@ The following instructions will guide you through the steps to execute the exper
 1. The execution output will be continually saved to the output folder.
 
 ### Visualizing the experiment results.
-1. Go to https://gleraromero.github.io/kaleidoscope/euroalio2018
+1. Go to https://gleraromero.github.io/kaleidoscope/euroalio2018/index.html
 1. Add the output file.
 1. Select the experiments (TTBF or CTTBF).
 1. Add some attributes to visualize.

@@ -28,7 +28,8 @@ public:
 	Duration Resume();
 	
 	// Resets the time measured by the stopwatch to 0.
-	void Reset();
+	// Returns: this object to concatenate calls.
+	Stopwatch& Reset();
 	
 	// Returns: the time spent so far.
 	Duration Peek() const;

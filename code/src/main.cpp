@@ -51,11 +51,11 @@ bool heuristic_solution(const VRPInstance& vrp, const vector<double>& profits,
 //		* "ttbf": full formulation
 //		* "cttbf": compact formulation.
 //	- time_limit: number (time limit in seconds)
-int main()
+int main(int argc, char** argv)
 {
 	json output; // STDOUT output will go into this JSON.
 	
-	simulate_input_in_debug("instances/euroalio2018", "C101_25_a", "experiments/comparison.json", "TTBF");
+	if (argc > 1) simulate_runner_input("instances/euroalio2018", "C101_25_a", "experiments/comparison.json", "TTBF");
 	
 	json experiment, instance, solutions;
 	cin >> experiment >> instance >> solutions;

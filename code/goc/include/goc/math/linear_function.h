@@ -52,6 +52,17 @@ public:
 	// Precondition: Intersects(*this, f).
 	double Intersection(const LinearFunction& f) const;
 	
+	// Returns: the inverse function of this function (f) if exists, otherwise returns g(y) = max{x : f(x)=y }.
+	LinearFunction Inverse() const;
+	
+	// Restricts the domain.
+	// Returns: the restricted function.
+	LinearFunction RestrictDomain(const Interval& domain) const;
+	
+	// Restricts the image.
+	// Returns: the restricted function.
+	LinearFunction RestrictImage(const Interval& image) const;
+	
 	// Prints the function.
 	// Format: {(x1, y1)->(x2,y2)}.
 	void Print(std::ostream& os) const;
@@ -67,6 +78,12 @@ public:
 void from_json(const nlohmann::json& j, LinearFunction& f);
 
 void to_json(nlohmann::json& j, const LinearFunction& f);
+
+// Returns: f.domain
+inline Interval dom(const LinearFunction& f) { return f.domain; }
+
+// Returns: f.image
+inline Interval img(const LinearFunction& f) { return f.image; }
 
 // Returns: h(x) = f(x)+g(x).
 // Obs: dom(h) = dom(f) \cap dom(g).

@@ -45,6 +45,10 @@ public:
 	// Returns: a reference to this digraph to concatenate calls.
 	Digraph& RemoveArc(Arc e);
 	
+	// Removes arcs from the digraph.
+	// Returns: a reference to this digraph to concatenate calls.
+	Digraph& RemoveArcs(const std::vector<Arc>& arcs);
+	
 	// Returns: a vector with all the vertices ordered by number ascendingly.
 	const std::vector<Vertex>& Vertices() const;
 	

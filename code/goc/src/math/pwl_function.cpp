@@ -35,13 +35,25 @@ PWLFunction::PWLFunction()
 	domain_ = image_ = {INFTY, -INFTY};
 }
 
+PWLFunction::PWLFunction(const std::vector<LinearFunction>& pieces) : PWLFunction()
+{
+	for (auto& p: pieces) AddPiece(p);
+}
+
 void PWLFunction::AddPiece(const LinearFunction& piece)
 {
 	// If this piece is a continuation of the last piece, then we need to merge them into one piece to have the
 	// function normalized.
-	bool is_continuation_of_last_piece = !pieces_.empty() && epsilon_equal(pieces_.back().slope, piece.slope) &&
-		epsilon_equal(pieces_.back().intercept, piece.intercept) &&
-		epsilon_equal(pieces_.back().domain.right, piece.domain.left);
+	bool is_continuation_of_last_piece = false;
+	if (!pieces_.empty())
+	{
+		if (epsilon_equal(pieces_.back().domain.right, piece.domain.left))
+		{
+			double right_val = pieces_.back().Value(max(dom(pieces_.back())));
+			double left_val = piece.Value(min(dom(piece)));
+			is_continuation_of_last_piece = epsilon_equal(left_val, right_val) && (pieces_.back().domain.IsPoint() || epsilon_equal(pieces_.back().slope, piece.slope));
+		}
+	}
 	
 	if (!is_continuation_of_last_piece)
 	{
@@ -52,7 +64,10 @@ void PWLFunction::AddPiece(const LinearFunction& piece)
 	{
 		// Merge pieces to have the function normalized.
 		pieces_.back().domain.right = piece.domain.right;
-		pieces_.back().image.right = piece.image.right;
+		pieces_.back().image.left = min(pieces_.back().image.left, piece.image.left);
+		pieces_.back().image.right = max(pieces_.back().image.right, piece.image.right);
+		pieces_.back().slope = piece.slope;
+		pieces_.back().intercept = piece.intercept;
 	}
 	
 	// Update domain and image.
@@ -85,6 +100,11 @@ const vector<LinearFunction>& PWLFunction::Pieces() const
 }
 
 const LinearFunction& PWLFunction::Piece(int i) const
+{
+	return pieces_[i];
+}
+
+const LinearFunction& PWLFunction::operator[](int i) const
 {
 	return pieces_[i];
 }
@@ -161,13 +181,102 @@ double PWLFunction::PreValue(double y) const
 	}
 	
 	// Look for a piece that include x in their domain.
-	for (int i = pieces_.size()-1; i >= 0; --i)
+	for (int i = (int)pieces_.size()-1; i >= 0; --i)
 		if (pieces_[i].image.Includes(y))
 			return pieces_[i].PreValue(y);
 	
 	// The function is not continuous and x is not in the domain of any piece.
 	fail("PWLFunction::PreValue(" + STR(y) +") failed, becuase y is not inside the domain of its pieces.");
 	return -1;
+}
+
+PWLFunction PWLFunction::Compose(const PWLFunction& g) const
+{
+	PWLFunction fog;
+	
+	auto& f = *this;
+	int i = 0;
+	for (int j = 0; j < g.PieceCount(); ++j)
+	{
+		// Put i inside bounds.
+		i = max(0, min(f.PieceCount()-1, i));
+		
+		// If g[j] is constant, image is a single y = min(img(g[j])) = max(img(g[j])).
+		if (epsilon_equal(g[j].slope, 0.0))
+		{
+			double y = min(img(g[j]));
+			
+			// Find (unique) piece f[i] with img(g[j]) \subseteq dom(f[i]) if exists.
+			while (i < f.PieceCount() && epsilon_smaller(max(dom(f[i])), y)) ++i;
+			while (i >= 0 && epsilon_bigger(min(dom(f[i])), y)) --i;
+			
+			// If found f[i] such that dom(f[i]) \cap img(g[j]) \neq \emptyset, add the piece to fog.
+			if (i >= 0 && i < f.PieceCount() && dom(f[i]).Includes(y))
+				fog.AddPiece(LinearFunction({min(dom(g[j])), f[i](y)}, {max(dom(g[j])), f[i](y)}));
+		}
+		// If g[j] is increasing.
+		else if (epsilon_bigger(g[j].slope, 0.0))
+		{
+			// Find first piece f[i] such that max(dom(f[i])) >= min(img(g[j])).
+			while (i > 0 && epsilon_bigger_equal(max(dom(f[i-1])), min(img(g[j])))) --i;
+			while (i < f.PieceCount() && epsilon_smaller(max(dom(f[i])), min(img(g[j])))) ++i;
+			
+			// For each piece f[i] such that dom(f[i]) \cap img(g[j]) \neq \emptyset
+			for (; i < PieceCount() && dom(f[i]).Intersects(img(g[j])); ++i)
+			{
+				// Find intersection.
+				Interval inter = dom(f[i]).Intersection(img(g[j]));
+				double left = g[j].PreValue(inter.left), right = g[j].PreValue(inter.right);
+				fog.AddPiece(LinearFunction({left, f[i](inter.left)}, {right, f[i](inter.right)}));
+			}
+		}
+		// If g[j] is decreasing.
+		else if (epsilon_smaller(g[j].slope, 0.0))
+		{
+			// Find last piece f[i] such that min(dom(f[i])) <= max(img(g[j])).
+			while (i < f.PieceCount()-1 && epsilon_smaller_equal(min(dom(f[i+1])), max(img(g[j])))) ++i;
+			while (i >= 0 && epsilon_bigger(min(dom(f[i])), max(img(g[j])))) --i;
+			
+			// For each piece f[i] such that dom(f[i]) \cap img(g[j]) \neq \emptyset
+			for (; i >= 0 && dom(f[i]).Intersects(img(g[j])); --i)
+			{
+				// Find intersection.
+				Interval inter = dom(f[i]).Intersection(img(g[j]));
+				double left = g[j].PreValue(inter.right), right = g[j].PreValue(inter.left);
+				fog.AddPiece(LinearFunction({left, f[i](inter.right)}, {right, f[i](inter.left)}));
+			}
+		}
+	}
+	return fog;
+}
+
+PWLFunction PWLFunction::Inverse() const
+{
+	PWLFunction g;
+	for (auto& p: Pieces()) g = Max(g, PWLFunction({p.Inverse()}));
+	return g;
+}
+
+PWLFunction PWLFunction::RestrictDomain(const Interval& domain) const
+{
+	PWLFunction f;
+	for (auto& p: Pieces())
+	{
+		if (!domain.Intersects(p.domain)) continue;
+		f.AddPiece(p.RestrictDomain(domain));
+	}
+	return f;
+}
+
+PWLFunction PWLFunction::RestrictImage(const Interval& image) const
+{
+	PWLFunction f;
+	for (auto& p: Pieces())
+	{
+		if (!image.Intersects(p.image)) continue;
+		f.AddPiece(p.RestrictImage(image));
+	}
+	return f;
 }
 
 void PWLFunction::Print(std::ostream& os) const
@@ -221,7 +330,11 @@ PWLFunction operator+(const PWLFunction& f, const PWLFunction& g)
 	while (i < f.PieceCount() && j < g.PieceCount())
 	{
 		auto& pf = f.Piece(i), &pg = g.Piece(j);
-		h.AddPiece(pf + pg);
+		if (pf.domain.Intersects(pg.domain))
+		{
+			double left = max(pf.domain.left, pg.domain.left), right = min(pf.domain.right, pg.domain.right);
+			h.AddPiece(LinearFunction({left, pf.Value(left)+pg.Value(left)}, {right, pf.Value(right)+pg.Value(right)}));
+		}
 		if (epsilon_equal(pf.domain.right, pg.domain.right)) { ++i; ++j; }
 		else if (epsilon_smaller(pf.domain.right, pg.domain.right)) { ++i; }
 		else { ++j; }
@@ -241,7 +354,11 @@ PWLFunction operator*(const PWLFunction& f, const PWLFunction& g)
 	while (i < f.PieceCount() && j < g.PieceCount())
 	{
 		auto& pf = f.Piece(i), &pg = g.Piece(j);
-		h.AddPiece(pf * pg);
+		if (pf.domain.Intersects(pg.domain))
+		{
+			double left = max(pf.domain.left, pg.domain.left), right = min(pf.domain.right, pg.domain.right);
+			h.AddPiece(LinearFunction({left, pf.Value(left)*pg.Value(left)}, {right, pf.Value(right)*pg.Value(right)}));
+		}
 		if (epsilon_equal(pf.domain.right, pg.domain.right)) { ++i; ++j; }
 		else if (epsilon_smaller(pf.domain.right, pg.domain.right)) { ++i; }
 		else { ++j; }

@@ -37,17 +37,20 @@ public:
 	Maybe<int> enumerated_count; // number of labels enumerated.
 	Maybe<int> extended_count; // number of labels extended.
 	Maybe<int> dominated_count; // number of labels dominated.
+	Maybe<int> corrected_count; // number of labels corrected.
 	Maybe<int> processed_count; // number of labels processed.
 	Maybe<std::vector<int>> count_by_length; // count_by_length[i] indicates how many labels of length i were processed.
 	Maybe<Duration> queuing_time; // time pushing and popping from the queue.
 	Maybe<Duration> enumeration_time; // time spent in the enumeration phase.
 	Maybe<Duration> extension_time; // time spent in the extension phase.
 	Maybe<Duration> domination_time; // time spent in the domination phase.
+	Maybe<Duration> correction_time; // time spent in the correction phase.
 	Maybe<Duration> process_time; // time spent in the process phase.
 	Maybe<Duration> positive_domination_time; // time spent in the domination phase (when the result was DOMINATED).
 	Maybe<Duration> negative_domination_time; // time spent in the domination phase (when the result was NOT DOMINATED).
 	
-	MLBExecutionLog() = default;
+	// init_defaults: if true, then all properties are initialized with their default constructor.
+	MLBExecutionLog(bool init_defaults=false);
 	
 	// Serialize log.
 	virtual nlohmann::json ToJSON() const;

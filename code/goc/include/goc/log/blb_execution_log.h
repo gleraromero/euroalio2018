@@ -33,7 +33,8 @@ public:
 	Maybe<MLBExecutionLog> backward_log; // log of the backward labeling.
 	Maybe<Duration> merge_time; // time spent merging labels.
 	
-	BLBExecutionLog() = default;
+	// init_defaults: if true, then all properties are initialized with their default constructor.
+	BLBExecutionLog(bool init_defaults=false);
 	
 	// Serialize log.
 	virtual nlohmann::json ToJSON() const;

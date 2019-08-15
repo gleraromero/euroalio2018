@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <deque>
+#include <functional>
 #include <list>
 #include <map>
 #include <set>
@@ -127,6 +128,15 @@ T& get_or_insert_sorted(const std::vector<T>& v, const T& element, bool ascendin
 		swap(v[i], v[i-1]);
 	}
 	return v[i];
+}
+
+// Adds item to the vector vec in its position using the predicate to compare.
+// 	Pred(a, b): returns if item a should go before item b.
+// Precondition: vec is sorted ascendingly.
+template< typename T, typename Pred >
+typename std::vector<T>::iterator insert_sorted( std::vector<T> & vec, T const& item, Pred pred )
+{
+	return vec.insert(std::upper_bound(vec.begin(), vec.end(), item, pred), item);
 }
 
 // Precondition: Type T must have the != operator implemented.

@@ -34,6 +34,9 @@ public:
 	// Creates an empty piecewise linear function.
 	PWLFunction();
 	
+	// Creates a piecewise linear function with the specified pieces.
+	PWLFunction(const std::vector<LinearFunction>& pieces);
+	
 	// Adds the piece at the end of the function.
 	// Keeps the normalization invariant automatically.
 	void AddPiece(const LinearFunction& piece);
@@ -54,6 +57,10 @@ public:
 	// Returns: the i-th piece of the function.
 	// Precondition: i > PieceCount().
 	const LinearFunction& Piece(int i) const;
+	
+	// Returns: the i-th piece of the function.
+	// Precondition: i > PieceCount().
+	const LinearFunction& operator[](int i) const;
 	
 	// Returns: the first piece of the function.
 	// Precondition: !Empty().
@@ -88,9 +95,24 @@ public:
 	// Exception: if no f(x) = y, then it throws an exception.
 	double PreValue(double y) const;
 	
+	// Returns: the composition of this function (f) and g, i.e. fog(x) == f(g(x)).
+	// Observation: the domain of the new function are those x such that g(x) \in dom(f).
+	PWLFunction Compose(const PWLFunction& g) const;
+	
+	// Returns: the inverse of this function (f) if is inversible, otherwise returns g(y) = max{x : f(x) = y}.
+	PWLFunction Inverse() const;
+	
+	// Restricts the domain to only the pieces included in the parameter.
+	// Returns: the restricted function.
+	PWLFunction RestrictDomain(const Interval& domain) const;
+	
+	// Restricts the image to only the pieces included in the parameter.
+	// Returns: the restricted function.
+	PWLFunction RestrictImage(const Interval& image) const;
+	
 	// Prints the function.
 	// Format: [p1, p2, ..., pn].
-	void Print(std::ostream& os) const;
+	virtual void Print(std::ostream& os) const;
 	
 	// Returns: if all the pieces of both functions are the same.
 	bool operator==(const PWLFunction& f) const;
@@ -111,15 +133,15 @@ void from_json(const nlohmann::json& j, PWLFunction& f);
 void to_json(nlohmann::json& j, const PWLFunction& f);
 
 // Returns: the function h(x) = f(x)+g(x).
-// Precondition: dom(f) = dom(g).
+// Observation: only returns h(x) for x \in dom(f) \cap dom(g).
 PWLFunction operator+(const PWLFunction& f, const PWLFunction& g);
 
 // Returns: the function h(x) = f(x)-g(x).
-// Precondition: dom(f) = dom(g).
+// Observation: only returns h(x) for x \in dom(f) \cap dom(g).
 PWLFunction operator-(const PWLFunction& f, const PWLFunction& g);
 
 // Returns: the function h(x) = f(x)*g(x).
-// Precondition: dom(f) = dom(g).
+// Observation: only returns h(x) for x \in dom(f) \cap dom(g).
 PWLFunction operator*(const PWLFunction& f, const PWLFunction& g);
 
 // Returns: the function h(x) = f(x)+a.
@@ -151,6 +173,12 @@ goc::PWLFunction Min(const goc::PWLFunction& f, const goc::PWLFunction& g);
 // Returns: h(x) = min(f(x), a).
 goc::PWLFunction Min(const goc::PWLFunction& f, double a);
 goc::PWLFunction Min(double a, const goc::PWLFunction& f);
+
+// Returns: f.domain
+inline Interval dom(const PWLFunction& f) { return f.Domain(); }
+
+// Returns: f.image
+inline Interval img(const PWLFunction& f) { return f.Image(); }
 } // namespace goc
 
 #endif //GOC_MATH_PWL_FUNCTION_H

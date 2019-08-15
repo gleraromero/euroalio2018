@@ -56,6 +56,7 @@ CGExecutionLog solve_colgen(Formulation* formulation,
 	int variable_count = -1, initial_variable_count = formulation->VariableCount();
 	int row_count = -1;
 	output.WriteHeader();
+	double objective_value = 0.0;
 	while (variable_count < formulation->VariableCount() || row_count < formulation->ConstraintCount())
 	{
 		// Check if time limit was exceeded.
@@ -65,21 +66,21 @@ CGExecutionLog solve_colgen(Formulation* formulation,
 		lp_solver->time_limit = time_limit - rolex.Peek();
 		auto lp_log = lp_solver->Solve(formulation, {LPOption::Duals, LPOption::Incumbent});
 		*execution_log.lp_time += *lp_log.time;
+		
 		if (*lp_log.status != LPStatus::Optimum) { execution_log.status = parse_lp_status(*lp_log.status); break; }
+		objective_value = lp_log.incumbent_value;
+		if (output.RegisterAttempt()) output.WriteRow({STR(rolex.Peek()), STR(execution_log.iteration_count++), STR(objective_value), STR(formulation->VariableCount())});
 		
 		// Update variable count before solving the pricing problem.
 		variable_count = formulation->VariableCount();
 		row_count = formulation->ConstraintCount();
 		
-		if (execution_log.iteration_count == 0) output.WriteRow({STR(Duration::None()), "0", STR(*lp_log.incumbent_value), STR(variable_count)});
-		
 		// Solve the pricing problem (i.e. add new variables to the formulation).
 		Stopwatch pricing_rolex(true);
 		pricing_function(*lp_log.duals, *lp_log.incumbent_value, time_limit - rolex.Peek(), &execution_log);
 		*execution_log.pricing_time += pricing_rolex.Pause();
-		
-		if (output.RegisterAttempt()) output.WriteRow({STR(rolex.Peek()), STR(++execution_log.iteration_count), STR(*lp_log.incumbent_value), STR(formulation->VariableCount())});
 	}
+	output.WriteRow({STR(rolex.Peek()), STR(execution_log.iteration_count), STR(objective_value), STR(formulation->VariableCount())});
 	if (screen_output) *screen_output << endl;
 	
 	// If the column generation was solved to optimality, get the actual solution.

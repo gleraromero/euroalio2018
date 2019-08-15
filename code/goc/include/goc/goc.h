@@ -12,8 +12,7 @@
 #include "goc/collection/bitset_utils.h"
 #include "goc/collection/collection_utils.h"
 #include "goc/collection/matrix.h"
-
-#include "goc/debug/debug_utils.h"
+#include "goc/collection/vector_map.h"
 
 #include "goc/exception/exception_utils.h"
 
@@ -58,6 +57,8 @@
 #include "goc/print/print_utils.h"
 #include "goc/print/printable.h"
 #include "goc/print/table_stream.h"
+
+#include "goc/runner/runner_utils.h"
 
 #include "goc/string/string_utils.h"
 

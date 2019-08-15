@@ -43,6 +43,16 @@ bool Interval::Intersects(const Interval& r) const
 	return !(epsilon_smaller(r.right, left) || epsilon_bigger(r.left, right));
 }
 
+Interval Interval::Intersection(const Interval& r) const
+{
+	return Interval(max(left, r.left), min(right, r.right));
+}
+
+bool Interval::IsPoint() const
+{
+	return epsilon_equal(left, right);
+}
+
 void Interval::Print(std::ostream& os) const
 {
 	os << "[" << left << ", " << right << "]";

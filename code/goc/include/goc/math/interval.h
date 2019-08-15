@@ -39,6 +39,12 @@ public:
 	// Returns: if r=[a,b] \cap [left, right] using epsilon-comparison.
 	bool Intersects(const Interval& r) const;
 	
+	// Returns: this \cap r.
+	Interval Intersection(const Interval& r) const;
+	
+	// Returns: if the domain is [a, a] for some a.
+	bool IsPoint() const;
+	
 	// Prints the interval.
 	// Format: [left, right].
 	virtual void Print(std::ostream& os) const;
@@ -56,5 +62,15 @@ void from_json(const nlohmann::json& j, Interval& i);
 
 void to_json(nlohmann::json& j, const Interval& i);
 } // namespace goc
+
+// Adding to namespace std to not conflict with overload.
+namespace std
+{
+// Returns: i.left
+inline double min(const goc::Interval& i) { return i.left; }
+
+// Returns: i.right
+inline double max(const goc::Interval& i) { return i.right; }
+} // namespace std
 
 #endif //GOC_MATH_INTERVAL_H

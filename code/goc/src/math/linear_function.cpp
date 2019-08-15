@@ -10,6 +10,7 @@
 
 #include "goc/exception/exception_utils.h"
 #include "goc/math/number_utils.h"
+#include "goc/string/string_utils.h"
 
 using namespace std;
 using namespace nlohmann;
@@ -36,14 +37,8 @@ double LinearFunction::operator()(double x) const
 
 double LinearFunction::PreValue(double y) const
 {
-	if (epsilon_equal(slope, 0.0))
-	{
-		if (epsilon_equal(y, intercept))
-		{
-			return domain.right;
-		}
-		fail("Function is not inversible.");
-	}
+	if (!image.Includes(y)) fail(STR(y) + " is not in the image " + STR(image));
+	if (epsilon_equal(slope, 0.0)) return domain.right;
 	return (y - intercept) / slope;
 }
 
@@ -59,6 +54,32 @@ bool LinearFunction::Intersects(const LinearFunction& f) const
 double LinearFunction::Intersection(const LinearFunction& l) const
 {
 	return (l.intercept - intercept) / (slope - l.slope);
+}
+
+LinearFunction LinearFunction::Inverse() const
+{
+	return LinearFunction({min(image), PreValue(min(image))}, {max(image), PreValue(max(image))});
+}
+
+LinearFunction LinearFunction::RestrictDomain(const Interval& domain) const
+{
+	double left = max(this->domain.left, domain.left);
+	double right = min(this->domain.right, domain.right);
+	return LinearFunction({left, Value(left)}, {right, Value(right)});
+}
+
+LinearFunction LinearFunction::RestrictImage(const Interval& image) const
+{
+	if (epsilon_equal(slope, 0.0))
+	{
+		if (image.Includes(intercept)) return *this;
+		else fail("Linear function is empty");
+	}
+	double left = max(this->image.left, image.left);
+	double right = min(this->image.right, image.right);
+	double pre_left = PreValue(left), pre_right = PreValue(right);
+	if (pre_left > pre_right) swap(pre_left, pre_right);
+	return LinearFunction({pre_left, left}, {pre_right, right});
 }
 
 void LinearFunction::Print(ostream& os) const
